@@ -4,8 +4,19 @@ require 'rubygems'
 require 'fileutils'
 
 class Array
-  def to_vim_args
-    self.map{ |option| %{+"#{ option.gsub('"',"'") }"} }.join ' '
+  def to_vim_args(context = nil)
+    self.map do |option|
+      option_str = if option.respond_to? :call
+        if context
+          context.instance_eval(&option)
+        else
+          option.call
+        end
+      else
+        option
+      end
+      %{+"#{ option_str.gsub('"',"'") }"}
+    end.join ' '
   end
 end
 
