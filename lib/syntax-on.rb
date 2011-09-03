@@ -24,7 +24,7 @@ class SyntaxOn
 
   VIM_BIN           = 'vim'
   VIM_OPTIONS       = [ "syntax on", "let html_use_css = 1", 'let html_use_encoding = "utf8"', "let use_xhtml = 1" ]
-  VIM_RENDER        = [ "exe 'normal zR'", "runtime\\! syntax/2html.vim", "wq", "q" ]
+  VIM_RENDER        = [ "exe 'normal zR'", "runtime\\! syntax/2html.vim", Proc.new {"w #{@filename}.html" }, "qa!" ]
   TEMP_DIRECTORY    = '/tmp/syntax-on'
   TEMP_FILENAME     = lambda { Time.now.strftime '%Y-%d-%m_%Hh-%Mm-%Ss' }
   THEME_PATH        = [ '~/.syntaxon/themes' ]
@@ -113,11 +113,12 @@ class SyntaxOn
   def setup_vim_options options = {}
     @options = VIM_OPTIONS.clone
     @options << "setfiletype #{ @syntax.to_s }" if @syntax
+    @options << "let html_use_css = #{@css ? 1 : 0}" if @css
     (options[:line_numbers]) ? @options << 'set number' : @options << 'set nonumber'
   end
 
   def command_string
-    "#{ VIM_BIN } #{ @options.to_vim_args } #{ VIM_RENDER.to_vim_args } #{ @filename } 2>/dev/null"
+    "#{ VIM_BIN } #{ @options.to_vim_args } #{ VIM_RENDER.to_vim_args(self) } #{ @filename } 2>/dev/null"
   end
 
   def render
